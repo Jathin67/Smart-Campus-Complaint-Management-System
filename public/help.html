@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help & Guidance - Campus Complaint System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            background-image: none;
+            background-color: var(--surface-muted);
+            align-items: flex-start;
+        }
+        .help-wrapper {
+            max-width: 960px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            padding: 48px;
+            margin-top: 40px;
+        }
+        .help-section + .help-section {
+            margin-top: 32px;
+        }
+        .help-section h2 {
+            margin-bottom: 16px;
+            font-size: 26px;
+            color: var(--brand-navy);
+        }
+        .help-section ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .help-section li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+            color: #374151;
+        }
+        .cta {
+            margin-top: 40px;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .cta a {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .cta .primary {
+            background: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-600) 100%);
+            color: #fff;
+        }
+        .cta .secondary {
+            background: #fff;
+            color: var(--brand-navy);
+            border: 2px solid var(--brand-navy);
+        }
+        .faq {
+            background: var(--surface-muted);
+            border-radius: 16px;
+            padding: 24px;
+        }
+        .faq h3 {
+            margin-top: 0;
+            color: var(--brand-navy-600);
+            margin-bottom: 12px;
+        }
+        .faq p {
+            margin: 0 0 14px;
+            color: #4b5563;
+        }
+        @media (max-width: 768px) {
+            .help-wrapper {
+                padding: 28px;
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-shell" style="align-items:flex-start;">
+        <div class="help-wrapper">
+            <div style="text-align:center;margin-bottom:32px;">
+                <img src="/College-Logo.jpg" alt="College Logo" id="collegeLogo" style="height:70px;width:auto;">
+                <h1 style="margin-top:16px;color:var(--brand-navy);">Need Assistance?</h1>
+                <p style="color:#6b7280;">Follow this quick guide to sign in or create a new account.</p>
+            </div>
+
+            <div class="help-section">
+                <h2>How to Sign In</h2>
+                <ul>
+                    <li>Go to the <strong>Sign in here</strong> form on the main page.</li>
+                    <li>Enter your registered <strong>Registration ID / email / phone</strong> in the first field.</li>
+                    <li>Type your <strong>Password</strong>. Use the eye icon to check the password if needed.</li>
+                    <li>Click <strong>Sign in</strong>. If your details are correct, you will be redirected to your dashboard.</li>
+                    <li>If you have forgotten your password, select <strong>Forgot password?</strong> to reset it.</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h2>How to Create a New Account</h2>
+                <ul>
+                    <li>On the main sign-in page, choose the <strong>Sign up</strong> link.</li>
+                    <li>Fill in your <strong>Full Name</strong>, <strong>Email</strong>, and a strong <strong>Password</strong>.</li>
+                    <li>Select your <strong>Role</strong> (Student, Staff, or Admin). Additional fields appear when required.</li>
+                    <li>Click <strong>Sign Up</strong>. A success message confirms your account.</li>
+                    <li>You will be redirected back to the sign-in screen to log in with your new credentials.</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h2>Troubleshooting Tips</h2>
+                <ul>
+                    <li>Ensure the email or registration ID matches exactly what was used during sign-up.</li>
+                    <li>Passwords are case-sensitive. Check your keyboard layout and Caps Lock.</li>
+                    <li>Still facing issues? Reach your system administrator or email <a href="mailto:support@chanakyauniversity.edu.in">support@chanakyauniversity.edu.in</a>.</li>
+                </ul>
+            </div>
+
+            <div class="help-section faq">
+                <h3>Frequently Asked Questions</h3>
+                <p><strong>Can I change my role later?</strong> Contact support to request role updates.</p>
+                <p><strong>Why didn’t I get a confirmation email?</strong> Check your spam folder. If the email doesn’t arrive within 10 minutes, contact support.</p>
+                <p><strong>What if I don’t know my Registration ID?</strong> Use your registered email or get in touch with your department admin.</p>
+            </div>
+
+            <div class="cta">
+                <a class="primary" href="index.html">Back to Sign In</a>
+                <a class="secondary" href="signup.html">Create a New Account</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const collegeLogo = localStorage.getItem('collegeLogo');
+        var logo = document.getElementById('collegeLogo');
+        if (logo) {
+            logo.src = collegeLogo || '/College-Logo.jpg';
+        }
+    </script>
+</body>
+</html>
+

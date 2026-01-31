@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Complaint Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="auth">
+    <div class="auth-shell">
+        <div class="auth-hero">
+            <div class="welcome-mini">WELCOME TO</div>
+            <div class="title">Chanakya University</div>
+        </div>
+
+        <div class="auth-panels single">
+            <div class="auth-card">
+                <h3>Sign in here</h3>
+                <div class="error-message" id="errorMessage"></div>
+                <div class="success-message" id="successMessage"></div>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="identifier">Registration id/email/phone</label>
+                        <input type="text" id="identifier" name="identifier" required placeholder="Registration id / email / phone">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="input-group">
+                            <input type="password" id="password" name="password" required>
+                            <button type="button" id="togglePassword" class="password-toggle" aria-label="Show password">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M12 5c-5.05 0-9.27 3.17-11 7 1.73 3.83 5.95 7 11 7s9.27-3.17 11-7c-1.73-3.83-5.95-7-11-7zm0 12c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" fill="currentColor"></path>
+                                    <path class="slash" d="M4 4l16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn" id="loginBtn">Sign in</button>
+                </form>
+                <div class="hint">
+                    <a href="forgot-password.html" style="color:#fff;text-decoration:underline;">Forgot password?</a>
+                    <span style="opacity:0.6;margin:0 8px;">|</span>
+                    <a href="signup.html" style="color:#fff;text-decoration:underline;">Sign up</a>
+                </div>
+                <div class="hint" style="margin-top:6px;">
+                    <a href="help.html" style="color:#fff;text-decoration:underline;">Need assistance? Get Help Here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        // Robust background loader: tries multiple filenames/extensions
+        // Robustly set background to your uploaded image in /public
+        document.body.style.setProperty('--auth-bg', "url('Campus-Image.jpg')");
+
+        // Generic login → redirect based on role
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const identifier = document.getElementById('identifier').value.trim();
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Logging in...';
+
+            try {
+                const response = await authAPI.login(identifier, password);
+                storage.setToken(response.token);
+                storage.setUser(response.user);
+                showSuccess('Login successful! Redirecting...');
+                
+                // Reset form immediately
+                document.getElementById('loginForm').reset();
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Sign in';
+                
+                setTimeout(() => {
+                    redirectToRoleDashboard(response.user.role);
+                }, 800);
+            } catch (error) {
+                showError(error.message || 'Login failed. Please check your credentials.');
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Sign in';
+                // Reset form on error too
+                document.getElementById('loginForm').reset();
+            }
+        });
+
+        // Password toggle
+        attachPasswordToggle('password', 'togglePassword');
+    </script>
+</body>
+</html>

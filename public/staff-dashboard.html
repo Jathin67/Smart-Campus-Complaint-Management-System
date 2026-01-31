@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Dashboard - Campus Complaint System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dashboard">
+    <div class="dashboard-header">
+        <h1>Faculty Dashboard</h1>
+        <div class="user-info">
+            <div class="notification-container">
+                <span class="notification-bell" onclick="toggleNotifications()">
+                    🔔
+                    <span class="notification-count" id="notificationCount">0</span>
+                </span>
+                <div class="notifications-dropdown" id="notificationsDropdown"></div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="dashboard-shell">
+        <aside class="sidebar">
+            <div class="brand">
+                <img src="/College-Logo.jpg" alt="Logo">
+                <div>
+                    <div>Complaint System</div>
+                    <div class="role">Faculty</div>
+                </div>
+            </div>
+            <div class="nav-section">
+                <a class="nav-item" href="#list">Department Complaints</a>
+                <a class="nav-item" href="/index.html">Home</a>
+            </div>
+        </aside>
+        <main class="main">
+    <div class="dashboard-content">
+        <!-- Welcome Message -->
+        <div class="welcome-card" style="margin-bottom: 24px; background: #ffffff !important; padding: 24px 28px; border-radius: 20px; border: 2px solid rgba(255, 200, 210, 0.4); box-shadow: 0 8px 24px rgba(255, 107, 107, 0.12), 0 2px 8px rgba(255, 182, 193, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);">
+            <h2 style="margin: 0; color: #3B82F6 !important; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">Hello, <span id="welcomeName" style="color: #3B82F6 !important; font-weight: 800; text-shadow: none;">Faculty</span>!</h2>
+        </div>
+        
+        <!-- Faculty cannot submit complaints; only view and update status -->
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+
+        <!-- Priority Filter Cards -->
+        <div class="priority-filter-grid" style="margin-bottom: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
+            <div class="priority-filter-card" data-priority="urgent" onclick="filterByPriority('urgent')" style="cursor: pointer; padding: 28px 24px; background: linear-gradient(135deg, #1565C0 0%, #0D47A1 100%); border-radius: 16px; color: white; text-align: center; box-shadow: 0 4px 20px rgba(21, 101, 192, 0.25); position: relative; overflow: hidden;">
+                <div style="font-size: 40px; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 8px rgba(0,0,0,0.2);" id="urgentCount">0</div>
+                <div style="font-weight: 600; font-size: 15px; letter-spacing: 0.5px; opacity: 0.95;">Urgent Priority</div>
+            </div>
+            <div class="priority-filter-card" data-priority="high" onclick="filterByPriority('high')" style="cursor: pointer; padding: 28px 24px; background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%); border-radius: 16px; color: white; text-align: center; box-shadow: 0 4px 20px rgba(30, 136, 229, 0.25); position: relative; overflow: hidden;">
+                <div style="font-size: 40px; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 8px rgba(0,0,0,0.2);" id="highCount">0</div>
+                <div style="font-weight: 600; font-size: 15px; letter-spacing: 0.5px; opacity: 0.95;">High Priority</div>
+            </div>
+            <div class="priority-filter-card" data-priority="medium" onclick="filterByPriority('medium')" style="cursor: pointer; padding: 28px 24px; background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%); border-radius: 16px; color: white; text-align: center; box-shadow: 0 4px 20px rgba(66, 165, 245, 0.25); position: relative; overflow: hidden;">
+                <div style="font-size: 40px; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 8px rgba(0,0,0,0.2);" id="mediumCount">0</div>
+                <div style="font-weight: 600; font-size: 15px; letter-spacing: 0.5px; opacity: 0.95;">Medium Priority</div>
+            </div>
+                <div class="priority-filter-card" data-priority="low" onclick="filterByPriority('low')" style="cursor: pointer; padding: 28px 24px; background: linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%); border-radius: 16px; color: white; text-align: center; box-shadow: 0 4px 20px rgba(100, 181, 246, 0.25); position: relative; overflow: hidden;">
+                    <div style="font-size: 40px; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 8px rgba(0,0,0,0.2);" id="lowCount">0</div>
+                    <div style="font-weight: 600; font-size: 15px; letter-spacing: 0.5px; opacity: 0.95;">Low Priority</div>
+                </div>
+        </div>
+        
+        <!-- Statistics Cards -->
+        <div class="stats-grid" style="margin-bottom: 15px;">
+            <div class="stat-card" style="border-top: 4px solid #EF4444;">
+                <div style="font-size: 42px; font-weight: bold; background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 10px;" id="rejectedComplaints">0</div>
+                <div class="stat-label" style="color: #666; font-weight: 600;">Rejected</div>
+            </div>
+            <div class="stat-card" style="border-top: 4px solid #3B82F6;">
+                <div style="font-size: 42px; font-weight: bold; background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 10px;" id="inProgressComplaints">0</div>
+                <div class="stat-label" style="color: #666; font-weight: 600;">In Progress</div>
+            </div>
+            <div class="stat-card" style="border-top: 4px solid #3B82F6;">
+                <div style="font-size: 42px; font-weight: bold; background: linear-gradient(135deg, #10B981 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 10px;" id="completedComplaints">0</div>
+                <div class="stat-label" style="color: #666; font-weight: 600;">Completed</div>
+            </div>
+            <div class="stat-card" style="border-top: 4px solid #FBC02D;">
+                <div style="font-size: 42px; font-weight: bold; background: linear-gradient(135deg, #FBC02D 0%, #F9A825 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 10px;" id="pendingComplaints">0</div>
+                <div class="stat-label" style="color: #666; font-weight: 600;">Pending</div>
+            </div>
+        </div>
+
+        <!-- Horizontal Dashboard Sections -->
+        <div class="dashboard-sections-grid staff-dashboard-grid">
+        <div class="card dashboard-section-card" id="list">
+            <h2>Department Complaints</h2>
+            <div class="filter-bar">
+                <select id="statusFilter" onchange="loadComplaints()">
+                    <option value="">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+                <select id="priorityFilter" onchange="loadComplaints()">
+                    <option value="">All Priorities</option>
+                    <option value="urgent">Urgent</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+                <select id="categoryFilter" onchange="loadComplaints()">
+                    <option value="">All Categories</option>
+                    <option value="hostel">Hostel</option>
+                    <option value="classroom">Classroom</option>
+                    <option value="washrooms">Washrooms</option>
+                    <option value="security">Security</option>
+                    <option value="parking">Parking</option>
+                    <option value="campus">Campus</option>
+                    <option value="academics">Academics</option>
+                    <option value="canteen">Canteen/Cafeteria</option>
+                    <option value="food-court">Food Court</option>
+                    <option value="transportation">Transportation</option>
+                    <option value="library">Library</option>
+                    <option value="others">Others</option>
+                </select>
+            </div>
+            <div class="complaint-list" id="complaintList">
+                <p>Loading complaints...</p>
+            </div>
+        </div>
+        </div>
+    </div>
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        // Check authentication - verify token is still valid
+        const assetBase = (window.location.origin && window.location.origin !== 'null') ? window.location.origin : '';
+
+        async function checkAuth() {
+            const token = storage.getToken();
+            const cachedUser = storage.getUser();
+            const welcomeEl = document.getElementById('welcomeName');
+
+            const setWelcomeName = (payload) => {
+                if (!welcomeEl || !payload) return;
+                const name = payload.name || [payload.firstName, payload.lastName].filter(Boolean).join(' ').trim() || 'Faculty';
+                welcomeEl.textContent = name;
+            };
+
+            if (!token) {
+                window.location.href = '/index.html';
+                return false;
+            }
+            // Verify token is still valid by making a test API call
+            try {
+                const profile = await authAPI.getMe();
+                if (normalizeRole(profile.role) !== 'staff') {
+                    storage.clear();
+                    window.location.href = '/index.html';
+                    return false;
+                }
+                const mergedUser = {
+                    ...cachedUser,
+                    ...profile,
+                    name: profile?.name || cachedUser?.name || [profile?.firstName, profile?.lastName].filter(Boolean).join(' ').trim()
+                };
+                storage.setUser(mergedUser);
+                setWelcomeName(mergedUser);
+                return true;
+            } catch (error) {
+                if (error?.status === 401 || error?.status === 403) {
+                    storage.clear();
+                    window.location.href = '/index.html';
+                    return false;
+                }
+                if (cachedUser && normalizeRole(cachedUser.role) === 'staff') {
+                    console.warn('Auth verification failed, continuing with cached session:', error);
+                    setWelcomeName(cachedUser);
+                    return true;
+                }
+                window.location.href = '/index.html';
+                return false;
+            }
+        }
+
+        // Load data function
+        async function loadDashboardData() {
+            await loadComplaints();
+            await loadNotifications();
+        }
+
+        // Load complaints on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            const isAuthenticated = await checkAuth();
+            if (isAuthenticated) {
+                await loadDashboardData();
+                setInterval(loadNotifications, 30000); // Refresh notifications every 30 seconds
+                initSectionNavigation({
+                    menuSelector: '.sidebar .nav-item',
+                    offset: 120,
+                    scrollContainerSelector: '.dashboard-shell .main'
+                });
+            }
+        });
+
+        // Refresh data when page becomes visible (handles refresh) - with debouncing
+        let visibilityTimeout = null;
+        document.addEventListener('visibilitychange', async () => {
+            if (!document.hidden) {
+                // Clear any pending timeout
+                if (visibilityTimeout) {
+                    clearTimeout(visibilityTimeout);
+                }
+                // Debounce the reload to prevent multiple rapid reloads
+                visibilityTimeout = setTimeout(async () => {
+                const user = storage.getUser();
+                const token = storage.getToken();
+                if (user && token) {
+                    try {
+                        await authAPI.getMe(); // Verify token is still valid
+                        await loadDashboardData();
+                    } catch (error) {
+                        // Token expired, will be handled by checkAuth on next page load
+                    }
+                }
+                }, 500); // 500ms debounce
+            }
+        });
+
+
+
+        // Priority filter function - scrolls to first matching complaint
+        function filterByPriority(priority) {
+            // Set the priority filter dropdown value
+            const priorityFilter = document.getElementById('priorityFilter');
+            if (priorityFilter) {
+                priorityFilter.value = priority;
+            }
+            
+            // Update active state for priority cards
+            document.querySelectorAll('.priority-filter-card').forEach(card => {
+                if (card.dataset.priority === priority) {
+                    card.style.transform = 'scale(1.05)';
+                    card.style.boxShadow = '0 8px 25px rgba(0,0,0,0.4)';
+                    card.style.border = '2px solid rgba(255,255,255,0.8)';
+                } else {
+                    card.style.transform = 'scale(1)';
+                    card.style.boxShadow = '';
+                    card.style.border = '';
+                }
+            });
+            
+            // Scroll to complaints section immediately
+            const complaintsSection = document.getElementById('list');
+            if (complaintsSection) {
+                complaintsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            
+            // Load complaints with filter
+            loadComplaints().then(() => {
+                setTimeout(() => {
+                    // Scroll to complaints section again after loading
+                    const complaintsSection = document.getElementById('list');
+                    if (complaintsSection) {
+                        complaintsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                    
+                    // Find first complaint with matching priority and highlight it
+                    const complaintItems = document.querySelectorAll('.complaint-item');
+                    let targetComplaint = null;
+                    for (const item of complaintItems) {
+                        const priorityBadge = item.querySelector('.priority-pill');
+                        if (priorityBadge) {
+                            const badgeClasses = priorityBadge.className;
+                            if (badgeClasses.includes(`priority-${priority.toLowerCase()}`)) {
+                                targetComplaint = item;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (targetComplaint) {
+                        // Scroll to the specific complaint
+                        targetComplaint.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // Highlight the complaint briefly
+                        targetComplaint.style.transition = 'background-color 0.3s, box-shadow 0.3s';
+                        targetComplaint.style.backgroundColor = '#fff5f5';
+                        targetComplaint.style.boxShadow = '0 8px 24px rgba(255, 107, 107, 0.3)';
+                        setTimeout(() => {
+                            targetComplaint.style.backgroundColor = '';
+                            targetComplaint.style.boxShadow = '';
+                        }, 2000);
+                    }
+                }, 300);
+            });
+        }
+
+        // Scroll to specific complaint
+        function scrollToComplaint(complaintId) {
+            const complaintElement = document.getElementById(`complaint-${complaintId}`);
+            if (complaintElement) {
+                const mainContainer = document.querySelector('.main');
+                const headerHeight = document.querySelector('.dashboard-header')?.offsetHeight || 0;
+                const offset = complaintElement.offsetTop - headerHeight - 20;
+                if (mainContainer) {
+                    mainContainer.scrollTo({ top: offset, behavior: 'smooth' });
+                } else {
+                    window.scrollTo({ top: offset, behavior: 'smooth' });
+                }
+                complaintElement.style.transition = 'background-color 0.3s';
+                complaintElement.style.backgroundColor = '#fff9e6';
+                setTimeout(() => {
+                    complaintElement.style.backgroundColor = '';
+                }, 2000);
+            }
+        }
+
+        // Load complaints
+        async function loadComplaints() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter')?.value || '';
+            const filters = {};
+            if (statusFilter) filters.status = statusFilter;
+            if (categoryFilter) filters.category = categoryFilter;
+            if (priorityFilter) filters.priority = priorityFilter;
+
+            try {
+                const complaints = await complaintsAPI.getAll(filters);
+                displayComplaints(complaints);
+                loadNotifications();
+                return Promise.resolve();
+            } catch (error) {
+                showError(error.message || 'Failed to load complaints');
+                document.getElementById('complaintList').innerHTML = '<p>Failed to load complaints</p>';
+                return Promise.reject(error);
+            }
+        }
+
+        function displayComplaints(complaints) {
+            const list = document.getElementById('complaintList');
+            if (!list) return;
+            const orderedComplaints = sortComplaintsByPriority(complaints || []);
+            
+            // Update statistics
+            const rejected = orderedComplaints.filter(c => c.status === 'rejected').length;
+            const inProgress = orderedComplaints.filter(c => c.status === 'in-progress').length;
+            const completed = orderedComplaints.filter(c => c.status === 'completed').length;
+            const pending = orderedComplaints.filter(c => c.status === 'pending').length;
+            
+            // Update priority counts
+            const urgent = orderedComplaints.filter(c => c.priority === 'urgent').length;
+            const high = orderedComplaints.filter(c => c.priority === 'high').length;
+            const medium = orderedComplaints.filter(c => c.priority === 'medium').length;
+            const low = orderedComplaints.filter(c => c.priority === 'low').length;
+            
+            document.getElementById('rejectedComplaints').textContent = rejected;
+            document.getElementById('inProgressComplaints').textContent = inProgress;
+            document.getElementById('completedComplaints').textContent = completed;
+            document.getElementById('pendingComplaints').textContent = pending;
+            
+            const urgentEl = document.getElementById('urgentCount');
+            const highEl = document.getElementById('highCount');
+            const mediumEl = document.getElementById('mediumCount');
+            const lowEl = document.getElementById('lowCount');
+            if (urgentEl) urgentEl.textContent = urgent;
+            if (highEl) highEl.textContent = high;
+            if (mediumEl) mediumEl.textContent = medium;
+            if (lowEl) lowEl.textContent = low;
+            
+            if (orderedComplaints.length === 0) {
+                list.classList.add('empty');
+                list.classList.remove('scrollable');
+                list.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;"><p style="font-size: 18px;">No complaints found</p><p style="font-size: 14px; margin-top: 10px;">All clear! 🎉</p></div>';
+                return;
+            }
+
+            list.classList.remove('empty');
+            list.classList.add('scrollable');
+            list.innerHTML = orderedComplaints.map(complaint => `
+                <div class="complaint-item" id="complaint-${complaint._id}">
+                    <div class="complaint-header">
+                        <div>
+                            <div class="complaint-title">${complaint.title}</div>
+                            <div style="font-size: 13px; color: #666; margin-top: 5px;">${complaint.description}</div>
+                        </div>
+                        <span class="status-badge ${getStatusClass(complaint.status)}" onclick="scrollToComplaint('${complaint._id}')" style="cursor: pointer;" title="Click to scroll to this complaint">${complaint.status.charAt(0).toUpperCase() + complaint.status.slice(1).replace('-', ' ')}</span>
+                    </div>
+                    <div class="complaint-meta">
+                        <span><strong>Department:</strong> ${complaint.department || 'N/A'}</span>
+                        <span><strong>Category:</strong> ${complaint.category}${complaint.subcategory ? ' - ' + complaint.subcategory : ''}</span>
+                        <span><strong>Priority:</strong> <span onclick="scrollToComplaint('${complaint._id}')" style="cursor: pointer;">${getPriorityBadge(complaint.priority)}</span></span>
+                        <span><strong>Date:</strong> ${formatDate(complaint.createdAt)}</span>
+                    </div>
+                    ${complaint.photos && complaint.photos.length > 0 ? `
+                        <div class="complaint-photos" style="margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px;">
+                            ${complaint.photos.map(photo => `
+                                <img src="${assetBase}${photo}" onclick="window.open('${assetBase}${photo}', '_blank')" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid #e0e0e0;">
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    ${complaint.video && complaint.video.length > 0 ? `
+                        <div class="complaint-video" style="margin-top: 15px;">
+                            <video controls style="width: 100%; max-width: 500px; border-radius: 8px; border: 2px solid #e0e0e0;">
+                                <source src="${assetBase}${complaint.video[0]}" type="video/mp4">
+                                <source src="${assetBase}${complaint.video[0]}" type="video/webm">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    ` : ''}
+                    ${complaint.voice && complaint.voice.length > 0 ? `
+                        <div class="voice-player" style="margin-top: 15px;">
+                            <audio controls style="width: 100%; max-width: 400px;">
+                                <source src="${assetBase}${complaint.voice[0]}" type="audio/webm">
+                            </audio>
+                        </div>
+                    ` : ''}
+                    ${complaint.adminNotes ? `<p style="margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 5px;"><strong>Admin Note:</strong> ${complaint.adminNotes}</p>` : ''}
+                    ${complaint.feedback && complaint.feedback.rating && complaint.feedback.rating >= 1 && complaint.feedback.rating <= 5 ? `
+                        <div style="margin-top: 20px; padding: 24px; background: linear-gradient(135deg, #fff9e6 0%, #fffbf0 100%); border-radius: 16px; border: 3px solid #ffc107; box-shadow: 0 4px 15px rgba(255, 193, 7, 0.25);">
+                            <h4 style="margin-top: 0; margin-bottom: 16px; color: #f57c00; font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 24px;">⭐</span> Student Feedback
+                            </h4>
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <span style="font-weight: 600; color: #333;">Rating:</span>
+                                <div style="display: flex; gap: 4px; font-size: 20px;">
+                                    ${'⭐'.repeat(complaint.feedback.rating)}${'☆'.repeat(5 - complaint.feedback.rating)}
+                                </div>
+                                <span style="font-weight: 700; color: #f57c00; font-size: 18px;">${complaint.feedback.rating}/5</span>
+                            </div>
+                            ${complaint.feedback.comment ? `
+                                <div style="margin-top: 16px; padding: 16px; background: white; border-radius: 10px; border-left: 4px solid #ffc107;">
+                                    <p style="margin: 0 0 8px 0; font-weight: 600; color: #333;">Student's Comment:</p>
+                                    <p style="margin: 0; color: #555; line-height: 1.6; font-style: italic;">"${complaint.feedback.comment}"</p>
+                                </div>
+                            ` : ''}
+                            <p style="margin-top: 16px; margin-bottom: 0; font-size: 13px; color: #666; font-style: italic;">Submitted on ${formatDate(complaint.feedback.submittedAt || complaint.updatedAt || complaint.createdAt)}</p>
+                        </div>
+                    ` : ''}
+                    <div class="admin-controls">
+                        <select class="btn-sm" id="status-${complaint._id}" style="padding: 6px 10px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 13px;">
+                            <option value="pending" ${complaint.status === 'pending' ? 'selected' : ''}>Pending</option>
+                            <option value="in-progress" ${complaint.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
+                            <option value="completed" ${complaint.status === 'completed' ? 'selected' : ''}>Completed</option>
+                            <option value="rejected" ${complaint.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+                        </select>
+                        <input class="btn-sm" id="notes-${complaint._id}" placeholder="Admin notes" style="flex:1; border: 2px solid #e0e0e0; border-radius: 6px; padding: 8px;" />
+                        <button class="btn-sm btn-success" onclick="updateComplaintStatus('${complaint._id}')">Update</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function updateComplaintStatus(id) {
+            const status = document.getElementById(`status-${id}`).value;
+            const notes = document.getElementById(`notes-${id}`).value;
+            try {
+                await complaintsAPI.updateStatus(id, status, notes);
+                showSuccess('Status updated');
+                loadComplaints();
+            } catch (error) {
+                showError(error.message || 'Failed to update status');
+            }
+        }
+
+        async function loadNotifications() {
+            try {
+                const notifications = await usersAPI.getNotifications();
+                const unreadCount = notifications.filter(n => !n.read).length;
+                const countEl = document.getElementById('notificationCount');
+                if (countEl) countEl.textContent = unreadCount;
+                const dropdown = document.getElementById('notificationsDropdown');
+                if (!dropdown) {
+                    console.error('Notifications dropdown element not found');
+                    return;
+                }
+                if (notifications.length === 0) {
+                    dropdown.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;"><p style="font-size: 16px; font-weight: 600; margin: 0;">📬 Notifications</p><p style="font-size: 14px; margin: 10px 0 0 0; color: #999;">No notifications yet</p></div>';
+                } else {
+                    dropdown.innerHTML = '<div style="padding: 15px 20px; border-bottom: 2px solid rgba(102, 126, 234, 0.2); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px 16px 0 0;"><p style="margin: 0; font-size: 18px; font-weight: 700; color: white;">📬 Notifications</p></div>' + 
+                    notifications.slice(0, 10).map(notif => {
+                        const complaintId = notif.complaintId ? (notif.complaintId._id || notif.complaintId.id || notif.complaintId) : '';
+                        return `
+                        <div class="notification-item ${notif.read ? '' : 'unread'}" onclick="handleNotificationClick('${notif._id}', '${complaintId}')" style="cursor: pointer;">
+                            <p style="margin: 0; font-size: 15px; font-weight: ${notif.read ? '500' : '600'}; color: ${notif.read ? '#333' : '#1a202c'}; line-height: 1.5;">${notif.message || 'New notification'}</p>
+                            <p style="margin: 6px 0 0 0; font-size: 12px; color: #666; font-weight: 500;">${formatDate(notif.createdAt)}</p>
+                        </div>
+                    `;
+                    }).join('');
+                }
+            } catch (error) {
+                console.error('Failed to load notifications:', error);
+                const dropdown = document.getElementById('notificationsDropdown');
+                if (dropdown) {
+                    dropdown.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;"><p style="font-size: 16px; font-weight: 600; margin: 0;">📬 Notifications</p><p style="font-size: 14px; margin: 10px 0 0 0; color: #e74c3c;">Error loading notifications</p></div>';
+                }
+            }
+        }
+
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notificationsDropdown');
+            if (dropdown) dropdown.classList.toggle('show');
+        }
+
+        // Close notification dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('notificationsDropdown');
+            const bell = document.querySelector('.notification-bell');
+            if (dropdown && bell && !bell.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        async function markAsRead(id) {
+            try {
+                await usersAPI.markNotificationRead(id);
+                loadNotifications();
+            } catch (error) {
+                console.error('Failed to mark notification as read:', error);
+            }
+        }
+
+        async function handleNotificationClick(notificationId, complaintId) {
+            // Mark as read
+            await markAsRead(notificationId);
+            
+            // Close notification dropdown
+            const dropdown = document.getElementById('notificationsDropdown');
+            if (dropdown) dropdown.classList.remove('show');
+            
+            // Navigate to complaints section
+            const complaintsSection = document.getElementById('list');
+            if (complaintsSection) {
+                complaintsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            
+            // If complaint ID exists, scroll to that complaint
+            if (complaintId && complaintId !== 'undefined' && complaintId !== '') {
+                // Ensure complaints are loaded
+                await loadComplaints();
+                
+                // Scroll to the complaint after a short delay to ensure DOM is updated
+                setTimeout(() => {
+                    const complaintElement = document.getElementById(`complaint-${complaintId}`);
+                    if (complaintElement) {
+                        complaintElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // Highlight the complaint briefly
+                        complaintElement.style.transition = 'background-color 0.3s';
+                        complaintElement.style.backgroundColor = '#fff3cd';
+                        setTimeout(() => {
+                            complaintElement.style.backgroundColor = '';
+                        }, 2000);
+                    }
+                }, 500);
+            }
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                storage.clear();
+                window.location.href = '/index.html';
+            }
+        }
+    </script>
+</body>
+</html>

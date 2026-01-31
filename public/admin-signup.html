@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Sign Up - Campus Complaint System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="auth">
+    <div class="container">
+        <div class="login-header">
+            <img src="/College-Logo.jpg" alt="College Logo" class="college-logo" id="collegeLogo">
+            <h1>Admin Registration</h1>
+            <p class="subtitle">Create admin account</p>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+
+        <form id="signupForm">
+            <div class="form-row">
+                <div class="form-group" style="flex:1; margin-right: 10px;">
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName" name="firstName" required>
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName" name="lastName" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="email">Email Address (@gmail.com)</label>
+                <input type="email" id="email" name="email" required placeholder="yourname@gmail.com">
+                <small>Admin email must be a @gmail.com address</small>
+            </div>
+            <div class="form-group">
+                <label for="phone">Mobile Number (India)</label>
+                <input type="text" id="phone" name="phone" required pattern="^[6-9][0-9]{9}$" placeholder="10-digit mobile">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-group">
+                    <input type="password" id="password" name="password" required pattern="[A-Za-z0-9!@#$%&*]{8,13}" minlength="8" maxlength="13">
+                    <button type="button" id="togglePassword" class="password-toggle" aria-label="Show password">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 5c-5.05 0-9.27 3.17-11 7 1.73 3.83 5.95 7 11 7s9.27-3.17 11-7c-1.73-3.83-5.95-7-11-7zm0 12c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" fill="currentColor"></path>
+                            <path class="slash" d="M4 4l16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                        </svg>
+                    </button>
+                </div>
+                <small>Password must be 8-13 chars with at least 1 uppercase, 1 lowercase, 1 number, and 1 special (!@#$%&*).</small>
+            </div>
+            <!-- Admin does not require department or school -->
+            <button type="submit" class="btn" id="signupBtn">Sign Up</button>
+        </form>
+
+        <div class="switch-link">
+            <p>Already have an account? <a href="admin-login.html">Login here</a></p>
+            <p style="margin-top: 10px;"><a href="index.html">Back to Home</a></p>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const signupBtn = document.getElementById('signupBtn');
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            signupBtn.disabled = true;
+            signupBtn.textContent = 'Creating account...';
+
+            const pw = document.getElementById('password').value;
+            if (!isValidPassword(pw)) {
+                showError('Password does not meet the policy.');
+                signupBtn.disabled = false;
+                signupBtn.textContent = 'Sign Up';
+                return;
+            }
+
+            const userData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                password: pw,
+                role: 'admin'
+            };
+
+            try {
+                const response = await authAPI.register(userData);
+                // Store token and user info
+                storage.setToken(response.token);
+                storage.setUser(response.user);
+                showSuccess('Account created successfully! Signing you in...');
+                signupBtn.textContent = 'Success!';
+                
+                setTimeout(() => {
+                    redirectToRoleDashboard(response.user.role);
+                }, 1200);
+            } catch (error) {
+                showError(error.message || 'Registration failed. Please try again.');
+                signupBtn.disabled = false;
+                signupBtn.textContent = 'Sign Up';
+            }
+        });
+
+        // Load college logo if available
+        const collegeLogo = localStorage.getItem('collegeLogo');
+        document.getElementById('collegeLogo').src = collegeLogo || '/College-Logo.jpg';
+        attachPasswordToggle('password', 'togglePassword');
+    </script>
+</body>
+</html>
+

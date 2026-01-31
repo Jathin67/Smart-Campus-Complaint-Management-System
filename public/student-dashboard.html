@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Campus Complaint System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dashboard">
+    <div class="dashboard-header">
+        <h1>Student Dashboard</h1>
+        <div class="user-info">
+            <div class="notification-container">
+                <span class="notification-bell" onclick="toggleNotifications()">
+                    🔔
+                    <span class="notification-count" id="notificationCount">0</span>
+                </span>
+                <div class="notifications-dropdown" id="notificationsDropdown"></div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="dashboard-shell">
+        <aside class="sidebar">
+            <div class="brand">
+                <img src="/College-Logo.jpg" alt="Logo">
+                <div>
+                    <div>Complaint System</div>
+                    <div class="role">Student</div>
+                </div>
+            </div>
+            <div class="nav-section">
+                <a class="nav-item" href="#submit">Submit Complaint</a>
+                <a class="nav-item" href="#mine">My Complaints</a>
+                <a class="nav-item" href="/index.html">Home</a>
+            </div>
+        </aside>
+        <main class="main">
+    <div class="dashboard-content">
+        <!-- Welcome Message -->
+        <div class="welcome-card" style="margin-bottom: 24px; background: #ffffff !important; padding: 24px 28px; border-radius: 20px; border: 2px solid rgba(255, 200, 210, 0.4); box-shadow: 0 8px 24px rgba(255, 107, 107, 0.12), 0 2px 8px rgba(255, 182, 193, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);">
+            <h2 style="margin: 0; color: #3B82F6 !important; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">Hello, <span id="welcomeName" style="color: #3B82F6 !important; font-weight: 800; text-shadow: none;">Student</span>!</h2>
+        </div>
+
+        <!-- Horizontal Dashboard Sections -->
+        <div class="dashboard-sections-grid student-dashboard-grid">
+        <div class="card dashboard-section-card" id="submit">
+            <h2>Submit New Complaint</h2>
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+            <div class="feedback-lock-banner hidden" id="feedbackGuard">
+                You have <span id="feedbackGuardCount">0</span> completed complaint(s) awaiting feedback. Please submit your feedback below to unlock new submissions.
+            </div>
+            
+            <form id="complaintForm">
+                <div class="form-group">
+                    <label for="title">Complaint Title</label>
+                    <input type="text" id="title" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="5" required></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" name="category" required onchange="updateSubcategories()">
+                            <option value="">Select Category</option>
+                            <option value="hostel">Hostel</option>
+                            <option value="classroom">Classroom</option>
+                            <option value="washrooms">Washrooms</option>
+                            <option value="security">Security</option>
+                            <option value="parking">Parking</option>
+                            <option value="campus">Campus</option>
+                            <option value="academics">Academics</option>
+                            <option value="canteen">Canteen/Cafeteria</option>
+                            <option value="food-court">Food Court</option>
+                            <option value="transportation">Transportation</option>
+                            <option value="library">Library</option>
+                            <option value="others">Others</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="subcategory">Subcategory</label>
+                        <select id="subcategory" name="subcategory">
+                            <option value="">Select subcategory (if applicable)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="priority">Priority</label>
+                    <select id="priority" name="priority">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Upload Photos (Optional - Max 5 photos)</label>
+                    <div class="file-upload" onclick="document.getElementById('photos').click()">
+                        <p>Click to upload photos or drag and drop (Maximum 5 photos)</p>
+                        <input type="file" id="photos" name="photos" multiple accept="image/*">
+                    </div>
+                    <small style="display: block; margin-top: 8px; color: #666;">You can upload up to 5 photos</small>
+                    <div id="photoPreview"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Upload Video (Optional)</label>
+                    <div class="file-upload" onclick="document.getElementById('video').click()">
+                        <p>Click to upload video or drag and drop</p>
+                        <input type="file" id="video" name="video" accept="video/*">
+                    </div>
+                    <small style="display: block; margin-top: 8px; color: #666;">Supported formats: MP4, WebM, MOV</small>
+                    <div id="videoPreview"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Record Voice (Optional)</label>
+                    <div class="voice-recorder">
+                        <button type="button" class="record-btn" id="recordBtn" onclick="toggleRecording()">Start Recording</button>
+                        <button type="button" class="stop-btn" id="stopBtn" onclick="stopRecording()" disabled>Stop Recording</button>
+                        <div id="recordingStatus"></div>
+                        <div id="audioPreview"></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn" id="submitBtn">Submit Complaint</button>
+            </form>
+        </div>
+
+        <div class="card dashboard-section-card" id="mine">
+            <h2>My Complaints</h2>
+            <!-- Priority Filter Cards -->
+            <div class="priority-filter-grid" style="margin-bottom: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
+                <div class="priority-filter-card" data-priority="urgent" onclick="filterByPriority('urgent')" style="cursor: pointer; padding: 24px 20px; background: linear-gradient(135deg, #1565C0 0%, #0D47A1 100%); border-radius: 14px; color: white; text-align: center; box-shadow: 0 4px 18px rgba(21, 101, 192, 0.25); position: relative; overflow: hidden;">
+                    <div style="font-size: 36px; font-weight: 700; margin-bottom: 6px; text-shadow: 0 2px 6px rgba(0,0,0,0.2);" id="urgentCount">0</div>
+                    <div style="font-weight: 600; font-size: 14px; letter-spacing: 0.5px; opacity: 0.95;">Urgent</div>
+                </div>
+                <div class="priority-filter-card" data-priority="high" onclick="filterByPriority('high')" style="cursor: pointer; padding: 24px 20px; background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%); border-radius: 14px; color: white; text-align: center; box-shadow: 0 4px 18px rgba(30, 136, 229, 0.25); position: relative; overflow: hidden;">
+                    <div style="font-size: 36px; font-weight: 700; margin-bottom: 6px; text-shadow: 0 2px 6px rgba(0,0,0,0.2);" id="highCount">0</div>
+                    <div style="font-weight: 600; font-size: 14px; letter-spacing: 0.5px; opacity: 0.95;">High</div>
+                </div>
+                <div class="priority-filter-card" data-priority="medium" onclick="filterByPriority('medium')" style="cursor: pointer; padding: 24px 20px; background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%); border-radius: 14px; color: white; text-align: center; box-shadow: 0 4px 18px rgba(66, 165, 245, 0.25); position: relative; overflow: hidden;">
+                    <div style="font-size: 36px; font-weight: 700; margin-bottom: 6px; text-shadow: 0 2px 6px rgba(0,0,0,0.2);" id="mediumCount">0</div>
+                    <div style="font-weight: 600; font-size: 14px; letter-spacing: 0.5px; opacity: 0.95;">Medium</div>
+                </div>
+                <div class="priority-filter-card" data-priority="low" onclick="filterByPriority('low')" style="cursor: pointer; padding: 24px 20px; background: linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%); border-radius: 14px; color: white; text-align: center; box-shadow: 0 4px 18px rgba(100, 181, 246, 0.25); position: relative; overflow: hidden;">
+                    <div style="font-size: 36px; font-weight: 700; margin-bottom: 6px; text-shadow: 0 2px 6px rgba(0,0,0,0.2);" id="lowCount">0</div>
+                    <div style="font-weight: 600; font-size: 14px; letter-spacing: 0.5px; opacity: 0.95;">Low</div>
+                </div>
+            </div>
+            <div class="filter-bar">
+                <select id="statusFilter" onchange="loadComplaints()">
+                    <option value="">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+                <select id="priorityFilter" onchange="loadComplaints()">
+                    <option value="">All Priorities</option>
+                    <option value="urgent">Urgent</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+                <select id="categoryFilter" onchange="loadComplaints()">
+                    <option value="">All Categories</option>
+                    <option value="hostel">Hostel</option>
+                    <option value="classroom">Classroom</option>
+                    <option value="washrooms">Washrooms</option>
+                    <option value="security">Security</option>
+                    <option value="parking">Parking</option>
+                    <option value="campus">Campus</option>
+                    <option value="academics">Academics</option>
+                    <option value="canteen">Canteen/Cafeteria</option>
+                    <option value="food-court">Food Court</option>
+                    <option value="transportation">Transportation</option>
+                    <option value="library">Library</option>
+                    <option value="others">Others</option>
+                </select>
+            </div>
+            <div class="complaint-list" id="complaintList">
+                <p>Loading complaints...</p>
+            </div>
+        </div>
+        </div>
+    </div>
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let audioBlob = null;
+        let submissionLocked = false;
+        let cachedComplaints = [];
+        let lastPendingFeedbackCount = 0;
+        const assetBase = (window.location.origin && window.location.origin !== 'null') ? window.location.origin : '';
+
+        // Category subcategories mapping
+        const subcategories = {
+            'hostel': [
+                { value: 'room-issue', label: 'Room Issue' },
+                { value: 'water-supply', label: 'Water Supply' },
+                { value: 'electricity', label: 'Electricity' },
+                { value: 'wifi', label: 'WiFi/Internet' },
+                { value: 'cleanliness', label: 'Cleanliness' },
+                { value: 'maintenance', label: 'Maintenance' },
+                { value: 'food', label: 'Mess/Food' },
+                { value: 'other', label: 'Other' }
+            ],
+            'classroom': [
+                { value: 'smartboard', label: 'Smartboard Issue' },
+                { value: 'projector', label: 'Projector Issue' },
+                { value: 'lab-components', label: 'Lab Components' },
+                { value: 'furniture', label: 'Furniture (Chairs, Tables)' },
+                { value: 'lighting', label: 'Lighting' },
+                { value: 'air-conditioning', label: 'Air Conditioning' },
+                { value: 'power-outlets', label: 'Power Outlets' },
+                { value: 'wifi', label: 'WiFi' },
+                { value: 'other', label: 'Other' }
+            ],
+            'washrooms': [
+                { value: 'cleanliness', label: 'Cleanliness Issue' },
+                { value: 'water-supply', label: 'Water Supply' },
+                { value: 'plumbing', label: 'Plumbing Issue' },
+                { value: 'toilet-facilities', label: 'Toilet Facilities' },
+                { value: 'soap-dispensers', label: 'Soap Dispensers' },
+                { value: 'hand-dryers', label: 'Hand Dryers' },
+                { value: 'other', label: 'Other' }
+            ],
+            'security': [
+                { value: 'cctv', label: 'CCTV Issue' },
+                { value: 'access-control', label: 'Access Control' },
+                { value: 'safety-concern', label: 'Safety Concern' },
+                { value: 'parking-security', label: 'Parking Security' },
+                { value: 'other', label: 'Other' }
+            ],
+            'parking': [
+                { value: 'parking-space', label: 'Parking Space' },
+                { value: 'security', label: 'Security in Parking' },
+                { value: 'lighting', label: 'Lighting' },
+                { value: 'maintenance', label: 'Maintenance' },
+                { value: 'other', label: 'Other' }
+            ],
+            'campus': [
+                { value: 'infrastructure', label: 'Infrastructure' },
+                { value: 'wifi', label: 'WiFi/Internet' },
+                { value: 'cleanliness', label: 'Cleanliness' },
+                { value: 'garden-maintenance', label: 'Garden Maintenance' },
+                { value: 'pathways', label: 'Pathways/Walkways' },
+                { value: 'other', label: 'Other' }
+            ],
+            'academics': [
+                { value: 'fee-payment', label: 'Fee Payment Issue' },
+                { value: 'digii-campus', label: 'Digii Campus Issue' },
+                { value: 'examination', label: 'Examination Related' },
+                { value: 'certificates', label: 'Certificates/Documents' },
+                { value: 'library', label: 'Library Services' },
+                { value: 'scholarship', label: 'Scholarship Related' },
+                { value: 'other', label: 'Other' }
+            ],
+            'canteen': [
+                { value: 'food-quality', label: 'Food Quality' },
+                { value: 'food-hygiene', label: 'Food Hygiene' },
+                { value: 'service', label: 'Service Issue' },
+                { value: 'pricing', label: 'Pricing Issue' },
+                { value: 'cleanliness', label: 'Cleanliness' },
+                { value: 'seating', label: 'Seating Arrangement' },
+                { value: 'other', label: 'Other' }
+            ],
+            'food-court': [
+                { value: 'food-quality', label: 'Food Quality' },
+                { value: 'food-hygiene', label: 'Food Hygiene' },
+                { value: 'service', label: 'Service Issue' },
+                { value: 'pricing', label: 'Pricing Issue' },
+                { value: 'cleanliness', label: 'Cleanliness' },
+                { value: 'seating', label: 'Seating Arrangement' },
+                { value: 'payment', label: 'Payment Issue' },
+                { value: 'other', label: 'Other' }
+            ],
+            'transportation': [
+                { value: 'bus-schedule', label: 'Bus Schedule' },
+                { value: 'bus-condition', label: 'Bus Condition' },
+                { value: 'driver-issue', label: 'Driver Issue' },
+                { value: 'route', label: 'Route Issue' },
+                { value: 'safety', label: 'Safety Concern' },
+                { value: 'parking', label: 'Parking at Campus' },
+                { value: 'other', label: 'Other' }
+            ],
+            'library': [
+                { value: 'book-availability', label: 'Book Availability' },
+                { value: 'quiet-space', label: 'Quiet Space Issue' },
+                { value: 'computer-access', label: 'Computer Access' },
+                { value: 'printing', label: 'Printing Service' },
+                { value: 'staff-service', label: 'Faculty Service' },
+                { value: 'facilities', label: 'Facilities Issue' },
+                { value: 'hours', label: 'Library Hours' },
+                { value: 'other', label: 'Other' }
+            ],
+            'others': [
+                { value: 'general', label: 'General Complaint' },
+                { value: 'infrastructure', label: 'Infrastructure' },
+                { value: 'other', label: 'Other' }
+            ]
+        };
+
+        function updateSubcategories() {
+            const category = document.getElementById('category').value;
+            const subcategorySelect = document.getElementById('subcategory');
+            
+            // Clear existing options
+            subcategorySelect.innerHTML = '<option value="">Select subcategory (if applicable)</option>';
+            
+            if (subcategories[category]) {
+                subcategories[category].forEach(sub => {
+                    const option = document.createElement('option');
+                    option.value = sub.value;
+                    option.textContent = sub.label;
+                    subcategorySelect.appendChild(option);
+                });
+                subcategorySelect.style.display = 'block';
+                subcategorySelect.closest('.form-group').style.display = 'block';
+            } else {
+                subcategorySelect.style.display = 'none';
+                subcategorySelect.closest('.form-group').style.display = 'none';
+            }
+        }
+
+        // Check authentication - verify token is still valid
+        async function checkAuth() {
+            const token = storage.getToken();
+            const cachedUser = storage.getUser();
+            const welcomeEl = document.getElementById('welcomeName');
+
+            const setWelcomeName = (payload) => {
+                if (!welcomeEl || !payload) return;
+                const name = payload.name || [payload.firstName, payload.lastName].filter(Boolean).join(' ').trim() || 'Student';
+                welcomeEl.textContent = name;
+            };
+
+            if (!token) {
+                window.location.href = '/index.html';
+                return false;
+            }
+
+            try {
+                const profile = await authAPI.getMe();
+                if (normalizeRole(profile.role) !== 'student') {
+                    storage.clear();
+                    window.location.href = '/index.html';
+                    return false;
+                }
+                const mergedUser = {
+                    ...cachedUser,
+                    ...profile,
+                    name: profile?.name || cachedUser?.name || [profile?.firstName, profile?.lastName].filter(Boolean).join(' ').trim()
+                };
+                storage.setUser(mergedUser);
+                setWelcomeName(mergedUser);
+                return true;
+            } catch (error) {
+                if (error?.status === 401 || error?.status === 403) {
+                    storage.clear();
+                    window.location.href = '/index.html';
+                    return false;
+                }
+                if (cachedUser && normalizeRole(cachedUser.role) === 'student') {
+                    console.warn('Auth verification failed, continuing with cached session:', error);
+                    setWelcomeName(cachedUser);
+                    return true;
+                }
+                window.location.href = '/index.html';
+                return false;
+            }
+        }
+
+        // Load data function
+        async function loadDashboardData() {
+            await loadComplaints();
+            await loadNotifications();
+        }
+
+        // Load complaints on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            const isAuthenticated = await checkAuth();
+            if (isAuthenticated) {
+                await loadDashboardData();
+                setInterval(loadNotifications, 30000); // Refresh notifications every 30 seconds
+                initSectionNavigation({
+                    menuSelector: '.sidebar .nav-item',
+                    offset: 120,
+                    scrollContainerSelector: '.dashboard-shell .main'
+                });
+            }
+        });
+
+        // Refresh data when page becomes visible (handles refresh) - with debouncing
+        let visibilityTimeout = null;
+        document.addEventListener('visibilitychange', async () => {
+            if (!document.hidden) {
+                // Clear any pending timeout
+                if (visibilityTimeout) {
+                    clearTimeout(visibilityTimeout);
+                }
+                // Debounce the reload to prevent multiple rapid reloads
+                visibilityTimeout = setTimeout(async () => {
+                const user = storage.getUser();
+                const token = storage.getToken();
+                if (user && token) {
+                    try {
+                        await authAPI.getMe(); // Verify token is still valid
+                        await loadDashboardData();
+                    } catch (error) {
+                        // Token expired, will be handled by checkAuth on next page load
+                    }
+                }
+                }, 500); // 500ms debounce
+            }
+        });
+
+        // Photo preview with limit of 5
+        document.getElementById('photos').addEventListener('change', (e) => {
+            const preview = document.getElementById('photoPreview');
+            preview.innerHTML = '';
+            const files = Array.from(e.target.files);
+            
+            if (files.length > 5) {
+                showError('You can only upload a maximum of 5 photos. Please select fewer photos.');
+                // Reset to first 5 files
+                const dt = new DataTransfer();
+                files.slice(0, 5).forEach(file => dt.items.add(file));
+                e.target.files = dt.files;
+                return;
+            }
+            
+            files.forEach((file, index) => {
+                const container = document.createElement('div');
+                container.style.display = 'inline-block';
+                container.style.position = 'relative';
+                container.style.margin = '8px';
+                
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.style.width = '120px';
+                img.style.height = '120px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '8px';
+                img.style.border = '2px solid #e0e0e0';
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = '×';
+                removeBtn.style.position = 'absolute';
+                removeBtn.style.top = '-8px';
+                removeBtn.style.right = '-8px';
+                removeBtn.style.width = '24px';
+                removeBtn.style.height = '24px';
+                removeBtn.style.borderRadius = '50%';
+                removeBtn.style.background = '#dc3545';
+                removeBtn.style.color = 'white';
+                removeBtn.style.border = 'none';
+                removeBtn.style.cursor = 'pointer';
+                removeBtn.style.fontSize = '18px';
+                removeBtn.style.fontWeight = 'bold';
+                removeBtn.style.display = 'flex';
+                removeBtn.style.alignItems = 'center';
+                removeBtn.style.justifyContent = 'center';
+                removeBtn.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
+                removeBtn.onclick = (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const dt = new DataTransfer();
+                    Array.from(e.target.files).forEach((f, i) => {
+                        if (i !== index) dt.items.add(f);
+                    });
+                    e.target.files = dt.files;
+                    e.target.dispatchEvent(new Event('change'));
+                };
+                
+                container.appendChild(img);
+                container.appendChild(removeBtn);
+                preview.appendChild(container);
+            });
+            
+            if (files.length > 0) {
+                const countInfo = document.createElement('div');
+                countInfo.style.marginTop = '8px';
+                countInfo.style.color = '#666';
+                countInfo.style.fontSize = '13px';
+                countInfo.textContent = `${files.length} of 5 photos selected`;
+                preview.appendChild(countInfo);
+            }
+        });
+
+        // Video preview
+        document.getElementById('video').addEventListener('change', (e) => {
+            const preview = document.getElementById('videoPreview');
+            preview.innerHTML = '';
+            const file = e.target.files[0];
+            
+            if (file) {
+                // Check file size (limit to 100MB)
+                const maxSize = 100 * 1024 * 1024; // 100MB
+                if (file.size > maxSize) {
+                    showError('Video file is too large. Maximum size is 100MB.');
+                    e.target.value = '';
+                    return;
+                }
+                
+                const container = document.createElement('div');
+                container.style.marginTop = '12px';
+                container.style.position = 'relative';
+                container.style.display = 'inline-block';
+                
+                const video = document.createElement('video');
+                video.src = URL.createObjectURL(file);
+                video.controls = true;
+                video.style.width = '100%';
+                video.style.maxWidth = '400px';
+                video.style.borderRadius = '8px';
+                video.style.border = '2px solid #e0e0e0';
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = '×';
+                removeBtn.style.position = 'absolute';
+                removeBtn.style.top = '-8px';
+                removeBtn.style.right = '-8px';
+                removeBtn.style.width = '28px';
+                removeBtn.style.height = '28px';
+                removeBtn.style.borderRadius = '50%';
+                removeBtn.style.background = '#dc3545';
+                removeBtn.style.color = 'white';
+                removeBtn.style.border = 'none';
+                removeBtn.style.cursor = 'pointer';
+                removeBtn.style.fontSize = '20px';
+                removeBtn.style.fontWeight = 'bold';
+                removeBtn.style.display = 'flex';
+                removeBtn.style.alignItems = 'center';
+                removeBtn.style.justifyContent = 'center';
+                removeBtn.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
+                removeBtn.onclick = (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    e.target.value = '';
+                    preview.innerHTML = '';
+                };
+                
+                const fileInfo = document.createElement('div');
+                fileInfo.style.marginTop = '8px';
+                fileInfo.style.color = '#666';
+                fileInfo.style.fontSize = '13px';
+                const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                fileInfo.textContent = `${file.name} (${fileSizeMB} MB)`;
+                
+                container.appendChild(video);
+                container.appendChild(removeBtn);
+                preview.appendChild(container);
+                preview.appendChild(fileInfo);
+            }
+        });
+
+        // Voice recording
+        async function toggleRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const audio = document.createElement('audio');
+                    audio.src = audioUrl;
+                    audio.controls = true;
+                    document.getElementById('audioPreview').innerHTML = '';
+                    document.getElementById('audioPreview').appendChild(audio);
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                document.getElementById('recordBtn').disabled = true;
+                document.getElementById('recordBtn').classList.add('recording');
+                document.getElementById('stopBtn').disabled = false;
+                document.getElementById('recordingStatus').textContent = 'Recording...';
+            } catch (error) {
+                showError('Microphone access denied. Please allow microphone access.');
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                document.getElementById('recordBtn').disabled = false;
+                document.getElementById('recordBtn').classList.remove('recording');
+                document.getElementById('stopBtn').disabled = true;
+                document.getElementById('recordingStatus').textContent = 'Recording stopped';
+            }
+        }
+
+        // Submit complaint
+        document.getElementById('complaintForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (submissionLocked) {
+                showError('Please submit feedback for completed complaints before creating a new one.');
+                return;
+            }
+            const title = document.getElementById('title').value.trim();
+            const description = document.getElementById('description').value.trim();
+            if (title.length < 3) { showError('Title must be at least 3 characters'); return; }
+            if (description.length < 10) { showError('Description must be at least 10 characters'); return; }
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            submitBtn.dataset.busy = 'true';
+
+            const complaintData = {
+                title,
+                description,
+                category: document.getElementById('category').value,
+                subcategory: document.getElementById('subcategory').value || undefined,
+                priority: document.getElementById('priority').value
+            };
+
+            const files = {
+                photos: document.getElementById('photos').files
+            };
+
+            // Validate photo count
+            if (files.photos.length > 5) {
+                showError('You can only upload a maximum of 5 photos.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Complaint';
+                delete submitBtn.dataset.busy;
+                return;
+            }
+
+            // Add video if selected
+            const videoInput = document.getElementById('video');
+            if (videoInput.files.length > 0) {
+                files.video = videoInput.files[0];
+            }
+
+            if (audioBlob) {
+                files.voice = audioBlob;
+            }
+
+            try {
+                await complaintsAPI.create(complaintData, files);
+                showSuccess('Complaint submitted successfully!');
+                document.getElementById('complaintForm').reset();
+                document.getElementById('photoPreview').innerHTML = '';
+                document.getElementById('videoPreview').innerHTML = '';
+                document.getElementById('audioPreview').innerHTML = '';
+                document.getElementById('recordingStatus').textContent = '';
+                audioBlob = null;
+                loadComplaints();
+            } catch (error) {
+                showError(error.message || 'Failed to submit complaint');
+            } finally {
+                delete submitBtn.dataset.busy;
+                if (submissionLocked) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Feedback Required';
+                } else {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Complaint';
+                }
+            }
+        });
+
+        // Event delegation for feedback buttons (handles dynamically added buttons)
+        // This ensures feedback buttons work even when added dynamically after page load
+        document.addEventListener('click', (e) => {
+            // Handle feedback button clicks
+            const feedbackBtn = e.target.closest('button[data-complaint-id]');
+            if (feedbackBtn) {
+                const complaintId = feedbackBtn.getAttribute('data-complaint-id');
+                if (complaintId && typeof submitFeedback === 'function') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    submitFeedback(complaintId);
+                    return;
+                }
+            }
+            
+            // Handle notification dropdown (existing functionality)
+            const dropdown = document.getElementById('notificationsDropdown');
+            const bell = document.querySelector('.notification-bell');
+            if (dropdown && bell && !bell.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // Priority filter function - scrolls to complaints section
+        function filterByPriority(priority) {
+            // Set the priority filter dropdown value
+            const priorityFilter = document.getElementById('priorityFilter');
+            if (priorityFilter) {
+                priorityFilter.value = priority;
+            }
+            
+            // Update active state for priority cards
+            document.querySelectorAll('.priority-filter-card').forEach(card => {
+                if (card.dataset.priority === priority) {
+                    card.style.transform = 'scale(1.05)';
+                    card.style.boxShadow = '0 8px 25px rgba(0,0,0,0.4)';
+                    card.style.border = '2px solid rgba(255,255,255,0.8)';
+                } else {
+                    card.style.transform = 'scale(1)';
+                    card.style.boxShadow = '';
+                    card.style.border = '';
+                }
+            });
+            
+            // Scroll to complaints section immediately
+            const complaintsSection = document.getElementById('mine');
+            if (complaintsSection) {
+                complaintsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            
+            // Load complaints with filter
+            loadComplaints().then(() => {
+                setTimeout(() => {
+                    // Scroll to complaints section again after loading
+                    const complaintsSection = document.getElementById('mine');
+                    if (complaintsSection) {
+                        complaintsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                    
+                    // Find first complaint with matching priority and highlight it
+                    const complaintItems = document.querySelectorAll('.complaint-item');
+                    let targetComplaint = null;
+                    for (const item of complaintItems) {
+                        const itemId = item.id.replace('complaint-', '');
+                        const matchingComplaint = cachedComplaints.find(c => (c._id || c.id) === itemId);
+                        if (matchingComplaint && (matchingComplaint.priority || 'medium').toLowerCase() === priority.toLowerCase()) {
+                            targetComplaint = item;
+                            break;
+                        }
+                    }
+                    
+                    if (targetComplaint) {
+                        // Scroll to the specific complaint
+                        targetComplaint.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // Highlight the complaint briefly
+                        targetComplaint.style.transition = 'background-color 0.3s, box-shadow 0.3s';
+                        targetComplaint.style.backgroundColor = '#fff5f5';
+                        targetComplaint.style.boxShadow = '0 8px 24px rgba(255, 107, 107, 0.3)';
+                        setTimeout(() => {
+                            targetComplaint.style.backgroundColor = '';
+                            targetComplaint.style.boxShadow = '';
+                        }, 2000);
+                    }
+                }, 300);
+            });
+        }
+
+        // Load complaints
+        async function loadComplaints() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter')?.value || '';
+
+            try {
+                const complaints = await complaintsAPI.getAll();
+                cachedComplaints = Array.isArray(complaints) ? complaints : [];
+                updateFeedbackGuard(cachedComplaints);
+                const filtered = filterComplaints(cachedComplaints, statusFilter, categoryFilter, priorityFilter);
+                
+                // Update priority counts
+                const urgent = cachedComplaints.filter(c => c.priority === 'urgent').length;
+                const high = cachedComplaints.filter(c => c.priority === 'high').length;
+                const medium = cachedComplaints.filter(c => c.priority === 'medium').length;
+                const low = cachedComplaints.filter(c => c.priority === 'low').length;
+                
+                const urgentEl = document.getElementById('urgentCount');
+                const highEl = document.getElementById('highCount');
+                const mediumEl = document.getElementById('mediumCount');
+                const lowEl = document.getElementById('lowCount');
+                if (urgentEl) urgentEl.textContent = urgent;
+                if (highEl) highEl.textContent = high;
+                if (mediumEl) mediumEl.textContent = medium;
+                if (lowEl) lowEl.textContent = low;
+                
+                displayComplaints(filtered, { statusFilter, categoryFilter });
+                return Promise.resolve();
+            } catch (error) {
+                console.error('Error loading complaints:', error);
+                showError(error.message || 'Failed to load complaints');
+                document.getElementById('complaintList').innerHTML = '<p>Failed to load complaints</p>';
+                return Promise.reject(error);
+            }
+        }
+
+        function filterComplaints(source = [], statusFilter = '', categoryFilter = '', priorityFilter = '') {
+            const normalizedStatus = (statusFilter || '').toLowerCase();
+            const normalizedCategory = (categoryFilter || '').toLowerCase();
+            const normalizedPriority = (priorityFilter || '').toLowerCase();
+            const filtered = source.filter(complaint => {
+                const currentStatus = (complaint.status || '').toLowerCase();
+                const currentCategory = (complaint.category || '').toLowerCase();
+                const currentPriority = (complaint.priority || 'medium').toLowerCase();
+                if (normalizedStatus && currentStatus !== normalizedStatus) return false;
+                if (normalizedCategory && currentCategory !== normalizedCategory) return false;
+                if (normalizedPriority && currentPriority !== normalizedPriority) return false;
+                return true;
+            });
+            return sortComplaintsByPriority(filtered);
+        }
+
+        function setSubmissionLockState(lock) {
+            const form = document.getElementById('complaintForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const fileUpload = form?.querySelector('.file-upload');
+            if (!form || !submitBtn) return;
+            form.classList.toggle('locked', lock);
+            const interactiveElements = form.querySelectorAll('input, textarea, select, button');
+            interactiveElements.forEach(el => {
+                if (el === submitBtn) {
+                    submitBtn.disabled = lock || submitBtn.dataset.busy === 'true';
+                    submitBtn.textContent = lock ? 'Feedback Required' : (submitBtn.dataset.busy === 'true' ? 'Submitting...' : 'Submit Complaint');
+                } else {
+                    if (lock) {
+                        el.dataset.prevDisabled = el.disabled ? 'true' : 'false';
+                        el.disabled = true;
+                    } else {
+                        if (el.dataset.prevDisabled === 'true') {
+                            el.disabled = true;
+                        } else {
+                            el.disabled = false;
+                        }
+                        delete el.dataset.prevDisabled;
+                    }
+                }
+            });
+            if (fileUpload) {
+                fileUpload.classList.toggle('disabled', lock);
+            }
+        }
+
+        function updateFeedbackGuard(allComplaints = []) {
+            const pendingFeedback = allComplaints.filter(needsFeedback);
+            const guard = document.getElementById('feedbackGuard');
+            const countEl = document.getElementById('feedbackGuardCount');
+            submissionLocked = pendingFeedback.length > 0;
+            if (guard && countEl) {
+                countEl.textContent = pendingFeedback.length;
+                guard.classList.toggle('hidden', pendingFeedback.length === 0);
+            }
+            setSubmissionLockState(submissionLocked);
+            if (submissionLocked && pendingFeedback.length > 0 && pendingFeedback.length !== lastPendingFeedbackCount) {
+                const targetId = pendingFeedback[0]._id;
+                if (targetId) {
+                    setTimeout(() => {
+                        const target = document.getElementById(`complaint-${targetId}`);
+                        if (target) {
+                            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }, 400);
+                }
+            }
+            lastPendingFeedbackCount = pendingFeedback.length;
+        }
+
+        function displayComplaints(complaints, filters = {}) {
+            const list = document.getElementById('complaintList');
+            if (!list) return;
+            const safeList = Array.isArray(complaints) ? complaints : [];
+            const appliedStatus = (filters.statusFilter || '').trim();
+            const appliedCategory = (filters.categoryFilter || '').trim();
+            const emptyMessage = appliedStatus || appliedCategory
+                ? 'No complaints match the current filters'
+                : 'No complaints found';
+            
+            if (safeList.length === 0) {
+                list.classList.add('empty');
+                list.classList.remove('scrollable');
+                list.innerHTML = `<div style="text-align: center; padding: 40px; color: #999;"><p style="font-size: 18px;">${emptyMessage}</p><p style="font-size: 14px; margin-top: 10px;">Submit your first complaint to get started! 🚀</p></div>`;
+                return;
+            }
+
+            list.classList.remove('empty');
+            list.classList.add('scrollable');
+            list.innerHTML = safeList.map(complaint => {
+                // Check if feedback exists and has a valid rating (1-5)
+                const hasFeedback = complaint.feedback && 
+                                    complaint.feedback.rating !== null && 
+                                    complaint.feedback.rating !== undefined && 
+                                    complaint.feedback.rating >= 1 && 
+                                    complaint.feedback.rating <= 5;
+                
+                // Only show feedback form if status is NOT pending (faculty has updated it)
+                const canGiveFeedback = complaint.status !== 'pending' && !hasFeedback;
+                
+                return `
+                <div class="complaint-item" id="complaint-${complaint._id}">
+                    <div class="complaint-header">
+                        <div>
+                            <div class="complaint-title">${complaint.title}</div>
+                            <div style="font-size: 13px; color: #666; margin-top: 5px;">${complaint.description}</div>
+                        </div>
+                        <span class="status-badge ${getStatusClass(complaint.status)}" onclick="scrollToComplaint('${complaint._id}')" style="cursor: pointer;" title="Click to scroll to this complaint">${complaint.status.charAt(0).toUpperCase() + complaint.status.slice(1).replace('-', ' ')}</span>
+                    </div>
+                    <div class="complaint-meta">
+                        <span><strong>Category:</strong> ${getCategoryLabel(complaint.category)}${complaint.subcategory ? ' - ' + getSubcategoryLabel(complaint.category, complaint.subcategory) : ''}</span>
+                        <span><strong>Priority:</strong> <span onclick="scrollToComplaint('${complaint._id}')" style="cursor: pointer;">${getPriorityBadge(complaint.priority)}</span></span>
+                        <span><strong>Date:</strong> ${formatDate(complaint.createdAt)}</span>
+                    </div>
+                    ${complaint.photos && complaint.photos.length > 0 ? `
+                        <div class="complaint-photos" style="margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px;">
+                            ${complaint.photos.map(photo => `
+                                <img src="${assetBase}${photo}" onclick="window.open('${assetBase}${photo}', '_blank')" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid #e0e0e0;">
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    ${complaint.video && complaint.video.length > 0 ? `
+                        <div class="complaint-video" style="margin-top: 15px;">
+                            <video controls style="width: 100%; max-width: 500px; border-radius: 8px; border: 2px solid #e0e0e0;">
+                                <source src="${assetBase}${complaint.video[0]}" type="video/mp4">
+                                <source src="${assetBase}${complaint.video[0]}" type="video/webm">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    ` : ''}
+                    ${complaint.voice && complaint.voice.length > 0 ? `
+                        <div class="voice-player" style="margin-top: 15px;">
+                            <audio controls style="width: 100%; max-width: 400px;">
+                                <source src="${assetBase}${complaint.voice[0]}" type="audio/webm">
+                            </audio>
+                        </div>
+                    ` : ''}
+                    ${complaint.adminNotes ? `<p style="margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 5px;"><strong>Admin Note:</strong> ${complaint.adminNotes}</p>` : ''}
+                    ${canGiveFeedback ? `
+                        <div class="feedback-form-card" data-feedback-form="${complaint._id}" style="margin-top: 20px; padding: 24px; background: linear-gradient(135deg, #e8f4fd 0%, #f0f8ff 100%); border-radius: 16px; border: 3px solid #667eea; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);">
+                            <h4 style="margin-top: 0; margin-bottom: 16px; color: #667eea; font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 24px;">💬</span> Share Your Experience
+                            </h4>
+                            <p style="margin-bottom: 20px; color: #555; font-size: 14px;">Please share your feedback to help us improve our services.</p>
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Rating (1-5):</label>
+                                <select id="rating-${complaint._id}" style="padding: 12px 16px; width: 100%; border: 2px solid #667eea; border-radius: 10px; font-size: 15px; background: white; cursor: pointer; transition: all 0.3s;">
+                                    <option value="5">5 - Excellent ⭐⭐⭐⭐⭐</option>
+                                    <option value="4">4 - Very Good ⭐⭐⭐⭐</option>
+                                    <option value="3">3 - Good ⭐⭐⭐</option>
+                                    <option value="2">2 - Fair ⭐⭐</option>
+                                    <option value="1">1 - Poor ⭐</option>
+                                </select>
+                            </div>
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Share Your Experience (optional):</label>
+                                <textarea id="comment-${complaint._id}" rows="4" style="width: 100%; padding: 12px; border: 2px solid #667eea; border-radius: 10px; font-size: 14px; font-family: inherit; resize: vertical; transition: all 0.3s;" placeholder="Tell us about your experience... What went well? What could be improved?"></textarea>
+                            </div>
+                            <button class="btn feedback-submit-btn" data-complaint-id="${complaint._id}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 14px 28px; border-radius: 10px; font-weight: 700; font-size: 15px; width: 100%; cursor: pointer;">Submit Feedback</button>
+                        </div>
+                    ` : ''}
+                    ${hasFeedback ? getFeedbackHtml(complaint.feedback) : ''}
+                </div>
+            `;
+            }).join('');
+        }
+
+        async function loadNotifications() {
+            try {
+                const notifications = await usersAPI.getNotifications();
+                const unreadCount = notifications.filter(n => !n.read).length;
+                const countEl = document.getElementById('notificationCount');
+                if (countEl) countEl.textContent = unreadCount;
+                const dropdown = document.getElementById('notificationsDropdown');
+                if (!dropdown) {
+                    console.error('Notifications dropdown element not found');
+                    return;
+                }
+                if (notifications.length === 0) {
+                    dropdown.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;"><p style="font-size: 16px; font-weight: 600; margin: 0;">📬 Notifications</p><p style="font-size: 14px; margin: 10px 0 0 0; color: #999;">No notifications yet</p></div>';
+                } else {
+                    dropdown.innerHTML = '<div style="padding: 15px 20px; border-bottom: 2px solid rgba(102, 126, 234, 0.2); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px 16px 0 0;"><p style="margin: 0; font-size: 18px; font-weight: 700; color: white;">📬 Notifications</p></div>' + 
+                    notifications.slice(0, 10).map(notif => {
+                        const complaintId = notif.complaintId ? (notif.complaintId._id || notif.complaintId.id || notif.complaintId) : '';
+                        return `
+                        <div class="notification-item ${notif.read ? '' : 'unread'}" onclick="handleNotificationClick('${notif._id}', '${complaintId}')" style="cursor: pointer;">
+                            <p style="margin: 0; font-size: 15px; font-weight: ${notif.read ? '500' : '600'}; color: ${notif.read ? '#333' : '#1a202c'}; line-height: 1.5;">${notif.message || 'New notification'}</p>
+                            <p style="margin: 6px 0 0 0; font-size: 12px; color: #666; font-weight: 500;">${formatDate(notif.createdAt)}</p>
+                        </div>
+                    `;
+                    }).join('');
+                }
+            } catch (error) {
+                console.error('Failed to load notifications:', error);
+                const dropdown = document.getElementById('notificationsDropdown');
+                if (dropdown) {
+                    dropdown.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;"><p style="font-size: 16px; font-weight: 600; margin: 0;">📬 Notifications</p><p style="font-size: 14px; margin: 10px 0 0 0; color: #e74c3c;">Error loading notifications</p></div>';
+                }
+            }
+        }
+
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notificationsDropdown');
+            if (dropdown) dropdown.classList.toggle('show');
+        }
+
+        // Close notification dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('notificationsDropdown');
+            const bell = document.querySelector('.notification-bell');
+            if (dropdown && bell && !bell.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        async function markAsRead(id) {
+            try {
+                await usersAPI.markNotificationRead(id);
+                loadNotifications();
+            } catch (error) {
+                console.error('Failed to mark notification as read:', error);
+            }
+        }
+
+        async function handleNotificationClick(notificationId, complaintId) {
+            // Mark as read
+            await markAsRead(notificationId);
+            
+            // Close notification dropdown
+            const dropdown = document.getElementById('notificationsDropdown');
+            if (dropdown) dropdown.classList.remove('show');
+            
+            // Navigate to "My Complaints" section
+            const complaintsSection = document.getElementById('mine');
+            if (complaintsSection) {
+                complaintsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            
+            // If complaint ID exists, scroll to that complaint
+            if (complaintId && complaintId !== 'undefined' && complaintId !== '') {
+                // Ensure complaints are loaded
+                await loadComplaints();
+                
+                // Scroll to the complaint after a short delay to ensure DOM is updated
+                setTimeout(() => {
+                    const complaintElement = document.getElementById(`complaint-${complaintId}`);
+                    if (complaintElement) {
+                        complaintElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // Highlight the complaint briefly
+                        complaintElement.style.transition = 'background-color 0.3s';
+                        complaintElement.style.backgroundColor = '#fff3cd';
+                        setTimeout(() => {
+                            complaintElement.style.backgroundColor = '';
+                        }, 2000);
+                    }
+                }, 500);
+            }
+        }
+
+        function getCategoryLabel(category) {
+            const categoryMap = {
+                'hostel': 'Hostel',
+                'classroom': 'Classroom',
+                'washrooms': 'Washrooms',
+                'security': 'Security',
+                'parking': 'Parking',
+                'campus': 'Campus',
+                'academics': 'Academics',
+                'canteen': 'Canteen/Cafeteria',
+                'food-court': 'Food Court',
+                'transportation': 'Transportation',
+                'library': 'Library',
+                'others': 'Others'
+            };
+            return categoryMap[category] || category;
+        }
+
+        function getSubcategoryLabel(category, subcategory) {
+            if (!subcategories[category]) return subcategory;
+            const sub = subcategories[category].find(s => s.value === subcategory);
+            return sub ? sub.label : subcategory;
+        }
+
+        function escapeHtml(text = '') {
+            return text.replace(/[&<>"']/g, (char) => {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                };
+                return map[char] || char;
+            });
+        }
+
+        function getFeedbackHtml(feedback) {
+            if (!feedback || feedback.rating === undefined) return '';
+            const safeComment = feedback.comment ? escapeHtml(feedback.comment) : '';
+            const stars = '⭐'.repeat(feedback.rating) + '☆'.repeat(5 - feedback.rating);
+            return `
+                <div class="feedback-display-card" style="margin-top: 20px; padding: 24px; background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 100%); border-radius: 16px; border: 3px solid #4caf50; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);">
+                    <h4 style="margin-top: 0; margin-bottom: 16px; color: #2e7d32; font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 24px;">✅</span> Your Feedback
+                    </h4>
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                        <span style="font-weight: 600; color: #333;">Rating:</span>
+                        <div style="display: flex; gap: 4px; font-size: 20px;">${stars}</div>
+                        <span style="font-weight: 700; color: #667eea; font-size: 18px;">${feedback.rating}/5</span>
+                    </div>
+                    ${safeComment ? `
+                        <div style="margin-top: 16px; padding: 16px; background: white; border-radius: 10px; border-left: 4px solid #4caf50;">
+                            <p style="margin: 0 0 8px 0; font-weight: 600; color: #333;">Your Comment:</p>
+                            <p style="margin: 0; color: #555; line-height: 1.6; font-style: italic;">"${safeComment}"</p>
+                        </div>
+                    ` : ''}
+                    <p style="margin-top: 16px; margin-bottom: 0; font-size: 13px; color: #666; font-style: italic;">Submitted on ${formatDate(feedback.submittedAt || new Date())}</p>
+                </div>
+            `;
+        }
+
+        async function submitFeedback(complaintId) {
+            console.log('Submitting feedback for complaint:', complaintId);
+            
+            // Find elements within the complaint item to ensure they exist
+            const complaintItem = document.getElementById(`complaint-${complaintId}`);
+            if (!complaintItem) {
+                console.error('Complaint item not found:', complaintId);
+                showError('Complaint not found. Please refresh the page.');
+                return;
+            }
+            
+            const ratingElement = complaintItem.querySelector(`#rating-${complaintId}`);
+            if (!ratingElement) {
+                console.error('Rating element not found for:', complaintId);
+                showError('Rating element not found. Please refresh the page.');
+                return;
+            }
+            
+            const commentElement = complaintItem.querySelector(`#comment-${complaintId}`);
+            if (!commentElement) {
+                console.error('Comment element not found for:', complaintId);
+                showError('Comment element not found. Please refresh the page.');
+                return;
+            }
+            
+            const ratingValue = ratingElement.value;
+            const rating = parseInt(ratingValue, 10);
+            const comment = commentElement.value.trim();
+            
+            // Validate rating - check if it's a valid number between 1 and 5
+            if (isNaN(rating) || rating < 1 || rating > 5) {
+                showError('Please select a valid rating between 1 and 5');
+                return;
+            }
+            
+            // Disable the submit button to prevent double submission
+            const submitButton = complaintItem.querySelector(`button[data-complaint-id="${complaintId}"]`);
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.textContent = 'Submitting...';
+            }
+            
+            try {
+                console.log('Sending feedback request:', { complaintId, rating, comment });
+                const response = await complaintsAPI.submitFeedback(complaintId, rating, comment);
+                showSuccess('Feedback submitted successfully!');
+                
+                if (response && response.feedback) {
+                    const feedbackForm = complaintItem.querySelector(`[data-feedback-form="${complaintId}"]`);
+                    if (feedbackForm) {
+                        feedbackForm.outerHTML = getFeedbackHtml(response.feedback);
+                    }
+                }
+                await loadComplaints();
+            } catch (error) {
+                console.error('Feedback submission error:', error);
+                showError(error.message || 'Failed to submit feedback');
+                
+                // Re-enable the submit button on error
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Submit Feedback';
+                }
+            }
+        }
+
+        // Scroll to specific complaint
+        function scrollToComplaint(complaintId) {
+            const complaintElement = document.getElementById(`complaint-${complaintId}`);
+            if (complaintElement) {
+                const mainContainer = document.querySelector('.main');
+                const headerHeight = document.querySelector('.dashboard-header')?.offsetHeight || 0;
+                const offset = complaintElement.offsetTop - headerHeight - 20;
+                if (mainContainer) {
+                    mainContainer.scrollTo({ top: offset, behavior: 'smooth' });
+                } else {
+                    window.scrollTo({ top: offset, behavior: 'smooth' });
+                }
+                // Highlight the complaint briefly
+                complaintElement.style.transition = 'background-color 0.3s';
+                complaintElement.style.backgroundColor = '#fff9e6';
+                setTimeout(() => {
+                    complaintElement.style.backgroundColor = '';
+                }, 2000);
+            }
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                storage.clear();
+                window.location.href = '/index.html';
+            }
+        }
+    </script>
+</body>
+</html>
